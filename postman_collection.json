@@ -12,6 +12,18 @@
     {
       "key": "customerId",
       "value": "c1"
+    },
+    {
+      "key": "fromCustomerId",
+      "value": "c1"
+    },
+    {
+      "key": "toCustomerId",
+      "value": "c2"
+    },
+    {
+      "key": "transferId",
+      "value": ""
     }
   ],
   "item": [
@@ -152,6 +164,184 @@
           "path": ["api", "customers", "{{customerId}}"]
         }
       }
+    },
+    {
+      "name": "Customer Accounts",
+      "item": [
+        {
+          "name": "Credit From-Customer Account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amountCents\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{fromCustomerId}}/account/credit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{fromCustomerId}}", "account", "credit"]
+            }
+          }
+        },
+        {
+          "name": "Debit From-Customer Account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amountCents\": 1000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{fromCustomerId}}/account/debit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{fromCustomerId}}", "account", "debit"]
+            }
+          }
+        },
+        {
+          "name": "Get From-Customer Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{fromCustomerId}}/account",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{fromCustomerId}}", "account"]
+            }
+          }
+        },
+        {
+          "name": "Get To-Customer Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{toCustomerId}}/account",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{toCustomerId}}", "account"]
+            }
+          }
+        },
+        {
+          "name": "Freeze To-Customer Account",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{toCustomerId}}/account/freeze",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{toCustomerId}}", "account", "freeze"]
+            }
+          }
+        },
+        {
+          "name": "Unfreeze To-Customer Account",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{toCustomerId}}/account/unfreeze",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers", "{{toCustomerId}}", "account", "unfreeze"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transfers (Workflow)",
+      "item": [
+        {
+          "name": "Start Transfer - Pass (sufficient funds)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('transferId', json.transferId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromCustomerId\": \"{{fromCustomerId}}\",\n  \"toCustomerId\": \"{{toCustomerId}}\",\n  \"amountCents\": 3000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers"]
+            }
+          }
+        },
+        {
+          "name": "Start Transfer - Fail (insufficient funds)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('transferId', json.transferId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromCustomerId\": \"{{fromCustomerId}}\",\n  \"toCustomerId\": \"{{toCustomerId}}\",\n  \"amountCents\": 999999999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers"]
+            }
+          }
+        },
+        {
+          "name": "Get Transfer Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers", "{{transferId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Transfer History (audit trail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers", "{{transferId}}", "history"]
+            }
+          }
+        }
+      ]
     }
   ]
 }
